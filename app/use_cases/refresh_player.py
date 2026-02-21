@@ -33,25 +33,30 @@ class RefreshPlayerUseCase:
 
         result = self._determine_result(player_data["crowns"], opponent_data["crowns"])
 
-        player_cards = (
-            Card(
+        player_cards = []
+        opponent_cards = []
+
+        for c in player_data["cards"]:
+            if c["name"]  == "Mirror":
+                c["elixirCost"] = 0.0
+            card = Card(
                 name=c["name"],
                 elixir_cost=c["elixirCost"],
                 level=c["level"],
                 owner=CardOwner.PLAYER,
             )
-            for c in player_data["cards"]
-        )
+            player_cards.append(card)
 
-        opponent_cards = (
-            Card(
+        for c in opponent_data["cards"]:
+            if c["name"]  == "Mirror":
+                c["elixirCost"] = 0.0
+            card = Card(
                 name=c["name"],
                 elixir_cost=c["elixirCost"],
                 level=c["level"],
                 owner=CardOwner.OPPONENT,
             )
-            for c in opponent_data["cards"]
-        )
+            opponent_cards.append(card)
 
         cards = list(chain(player_cards, opponent_cards))
 
