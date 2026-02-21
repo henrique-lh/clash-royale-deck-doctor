@@ -30,12 +30,13 @@ def _has_building(battles: List[Battle]) -> bool:
     return any(card.name in BUILDINGS for card in sample_deck)
 
 
-def generate_diagnosis_report(
+async def generate_diagnosis_report(
     battles: List[Battle],
     stats: BattleStats,
     deck_type: str,
     matchups: List[Dict],
-    ollama_client: OllamaClient
+    current_deck: List[Dict],
+    ollama_client: OllamaClient,
 ) -> Dict:
 
     generic_diagnosis = []
@@ -43,26 +44,33 @@ def generate_diagnosis_report(
 
     if stats.winrate < 45:
         generic_diagnosis.append(f"Seu winrate está abaixo de 45%.")
-        llm_input_diagnosis.append(f"user win rate is below 45%. Current win rate: {stats.winrate}%")
+        llm_input_diagnosis.append(
+            f"user win rate is below 45%. Current win rate: {stats.winrate}%"
+        )
 
     if stats.avg_elixir_leaked > 15:
         generic_diagnosis.append("Você está vazando muito elixir.")
-        llm_input_diagnosis.append(f"user elixir leak is above 15%. Current elixir leak: {stats.avg_elixir_leaked}")
+        llm_input_diagnosis.append(
+            f"user elixir leak is above 15%. Current elixir leak: {stats.avg_elixir_leaked}"
+        )
 
     if not _has_building(battles):
         generic_diagnosis.append("Seu deck não possui estrutura defensiva.")
         llm_input_diagnosis.append("user deck does not have defensive structure.")
 
     if matchups:
-        top_problem = matchups[0]
-        if top_problem["appearances"] > 3:
-            generic_diagnosis.append(
-                f"Dificuldade contra decks com {top_problem['card']}."
-            )
+        top_problems = ",".join(m["card"] for m in matchups[:5])
+        generic_diagnosis.append(
+            f"Dificuldade contra decks que possuem as cartas {top_problems}."
+        )
 
-        llm_input_diagnosis.append(f"difficulty against decks that have: {matchups}")
+        llm_input_diagnosis.append(
+            f"difficulty against decks that have: {matchups[:5]}"
+        )
 
-    recommendations = ollama_client.generate_recommendation(llm_input_diagnosis)
+    recommendations = await ollama_client.generate_recommendation(
+        llm_input_diagnosis, current_deck
+    )
 
     return {
         "deck_type": deck_type,
