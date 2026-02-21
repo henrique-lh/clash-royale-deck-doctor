@@ -12,9 +12,9 @@ class AnalyzePlayerUseCase:
     def __init__(self, repository: BattleRepository):
         self.repository = repository
 
-    def execute(self, player_tag: str, ollama_client: OllamaClient):
+    async def execute(self, player_tag: str, ollama_client: OllamaClient):
 
-        battles = self.repository.get_recent_by_player(player_tag)
+        battles = await self.repository.get_recent_by_player(player_tag)
 
         stats = BattleStats(**analyze_battles(battles))
 
