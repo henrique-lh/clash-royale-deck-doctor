@@ -41,6 +41,7 @@ async def refresh_player(
 async def analyze_player(
     tag: str,
     ollama_settings: OllamaSettings = Depends(get_ollama_settings),
+    clash_api_settings: ClashAPISettings = Depends(get_clash_api_settings),
 ):
 
     redis_client = RedisClient()
@@ -49,4 +50,6 @@ async def analyze_player(
     use_case = AnalyzePlayerUseCase(repository)
     ollama_client = OllamaClient(ollama_settings.api_key)
 
-    return await use_case.execute(tag, ollama_client)
+    clash_api_client = ClashAPIClient(api_key=clash_api_settings.api_key)
+
+    return await use_case.execute(tag, ollama_client, clash_api_client)
