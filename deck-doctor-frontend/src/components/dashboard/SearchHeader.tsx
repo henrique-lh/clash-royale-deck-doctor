@@ -71,7 +71,7 @@ const SearchHeader = ({ onSearch, loading, compact = false }: SearchHeaderProps)
                 value={playerTag}
                 onChange={(e) => setPlayerTag(e.target.value.toUpperCase())}
                 maxLength={15}
-                className="w-full pl-12 pr-4 py-3 rounded-lg bg-gray-800/80 border border-gray-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all text-lg font-semibold"
+                className="w-full pl-12 pr-4 py-3 rounded-lg text-white bg-gray-800/80 border border-gray-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all text-lg font-semibold"
                 autoFocus
               />
             </div>
