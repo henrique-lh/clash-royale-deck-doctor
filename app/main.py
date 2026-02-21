@@ -4,13 +4,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.players import router as players_router
-from app.infrastructure.database.session import init_db
+from app.infrastructure.cache.redis_setup import connect_redis, close_redis
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    await connect_redis()
     yield
+    await close_redis()
 
 app = FastAPI(lifespan=lifespan)
 
