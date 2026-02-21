@@ -1,4 +1,4 @@
-import requests
+import httpx
 
 
 class ClashAPIClient:
@@ -14,16 +14,18 @@ class ClashAPIClient:
     def __encode_tag(tag: str):
         return tag.replace("#", "%23")
 
-    def get_battle_log(self, player_tag: str):
+    async def get_battle_log(self, player_tag: str):
         tag = self.__encode_tag(player_tag)
         url = f"{self.BASE_URL}/players/{tag}/battlelog"
-        response = requests.get(url, headers=self.headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=self.headers)
         response.raise_for_status()
         return response.json()
 
-    def get_current_deck(self, player_tag: str):
+    async def get_current_deck(self, player_tag: str):
         tag = self.__encode_tag(player_tag)
         url = f"{self.BASE_URL}/players/{tag}"
-        response = requests.get(url, headers=self.headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=self.headers)
         response.raise_for_status()
         return response.json()

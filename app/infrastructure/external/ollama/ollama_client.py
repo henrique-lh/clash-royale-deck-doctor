@@ -1,5 +1,4 @@
-import requests
-
+import httpx
 
 class OllamaClient:
 
@@ -12,25 +11,25 @@ class OllamaClient:
             "Content-Type": "application/json"
         }
 
-    def generate_recommendation(self, problems: list[str]) -> list[str]:
+    async def generate_recommendation(self, problems: list[str], current_deck: list[dict]) -> list[str]:
         prompt = f"""You are now a professional Clash Royale player, able to offer potential solutions to the following issues.
 
 ## Task
-Given a list of problems, write a recommendation for how to solve them.
+given a list of problems, and the current user deck, write a recommendation for how to solve them. You must follow the rules below.
+use all inputs to think about possible solutions.
 
 ## Input
-Problems: {problems}
+problems with the deck: {problems}
+current user clash royale deck: {current_deck}
 
 ## Rules
-- You must write a recommendation for how to solve the problems. The recommendation should be a single sentence, brief and concise. If necessary, it can be split into multiple sentences.
-- You must give at least one solution for each problem.
-- You must not use any external resources.
-- You must write the answer in portuguese.
-- You must not use any emojis.
-- You must not use any special characters.
-- You must not use any markdown.
-- You must not use any code.
-- You must separate the solutions with a semicolon, one after the other.
+- you must write a recommendation for how to solve the problems
+- the recommendation should be a single sentence, brief and concise
+- if necessary, it can be split into multiple sentences
+- you must give at least one solution for each problem
+- you must write the answer in portuguese
+- you must separate the solutions with a semicolon, one after the other
+- list possible counters for the cards that the user has the most difficulty with
 """
         payload = {
             "model": self.MODEL,
@@ -41,7 +40,8 @@ Problems: {problems}
             "temperature": 0.3
         }
 
-        response = requests.post(self.API_URL, headers=self.headers, json=payload)
+        async with httpx.AsyncClient() as client:
+            response = await client.post(self.API_URL, headers=self.headers, json=payload)
         if response.status_code != 200:
             raise Exception(f"Error generating recommendation: {response.text}")
         result = response.json()

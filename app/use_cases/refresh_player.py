@@ -16,7 +16,7 @@ class RefreshPlayerUseCase:
 
     async def execute(self, player_tag: str):
 
-        raw_battles = self.api_client.get_battle_log(player_tag)
+        raw_battles = await self.api_client.get_battle_log(player_tag)
 
         await self.repository.delete_by_player(player_tag)
 

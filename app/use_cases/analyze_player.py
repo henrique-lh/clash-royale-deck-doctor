@@ -4,6 +4,7 @@ from app.domain.services.battle_analysis_service import analyze_battles
 from app.domain.services.deck_classifier import classify_deck
 from app.domain.services.diagnosis_engine import generate_diagnosis_report
 from app.domain.services.matchup_detector import detect_common_cards
+from app.infrastructure.external.clash_royale.clash_api_client import ClashAPIClient
 from app.infrastructure.external.ollama.ollama_client import OllamaClient
 
 
@@ -12,7 +13,12 @@ class AnalyzePlayerUseCase:
     def __init__(self, repository: BattleRepository):
         self.repository = repository
 
-    async def execute(self, player_tag: str, ollama_client: OllamaClient):
+    async def execute(
+        self,
+        player_tag: str,
+        ollama_client: OllamaClient,
+        clash_api_client: ClashAPIClient,
+    ):
 
         battles = await self.repository.get_recent_by_player(player_tag)
 
@@ -22,10 +28,11 @@ class AnalyzePlayerUseCase:
 
         matchups = detect_common_cards(battles)
 
-        diagnosis = generate_diagnosis_report(battles, stats, deck_type, matchups, ollama_client)
+        raw_deck = await clash_api_client.get_current_deck(player_tag)
+        current_deck = raw_deck["currentDeck"]
 
-        return {
-            "stats": stats,
-            "matchups": matchups,
-            "diagnosis": diagnosis
-        }
+        diagnosis = await generate_diagnosis_report(
+            battles, stats, deck_type, matchups, current_deck, ollama_client
+        )
+
+        return {"stats": stats, "matchups": matchups, "diagnosis": diagnosis}
